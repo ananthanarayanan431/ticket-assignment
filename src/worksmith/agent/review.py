@@ -58,11 +58,39 @@ async def list_escalations(graph) -> list[dict]:
     return escalations
 
 
-async def list_drafts() -> list[Ticket]:
+async def list_drafts(graph) -> list[dict]:
+    """
+    The `tickets` table only stores the decision/response, not the original
+    ticket content — so for display, pull subject/body/category/from_* out of
+    each ticket's LangGraph checkpoint state (the same place list_escalations
+    reads pending tickets from) and merge it with the persisted draft text.
+    """
     session_factory = get_session_factory()
     async with session_factory() as session:
         rows = await session.execute(select(Ticket).where(Ticket.decision == "draft_for_review", ~Ticket.resolved))
-        return rows.scalars().all()
+        tickets = rows.scalars().all()
+
+    drafts = []
+    for row in tickets:
+        state = await graph.aget_state({"configurable": {"thread_id": row.ticket_id}})
+        drafts.append(
+            {
+                "ticket_id": row.ticket_id,
+                "response_text": row.response_text,
+                "category": state.values.get("category"),
+                "from_name": state.values.get("from_name"),
+                "from_email": state.values.get("from_email"),
+                "subject": state.values.get("subject"),
+                "body": state.values.get("body"),
+            }
+        )
+    return drafts
+
+
+async def ticket_exists(ticket_id: str) -> bool:
+    session_factory = get_session_factory()
+    async with session_factory() as session:
+        return await session.get(Ticket, ticket_id) is not None
 
 
 async def resolve_escalation(graph, ticket_id: str, response_text: str | None, resolved_by: str | None) -> dict:

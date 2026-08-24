@@ -46,71 +46,163 @@ def call_db(fn):
     return asyncio.run(_run())
 
 
+def _invalidate_queues():
+    """Drop cached Escalations/Drafts so the next visit to those pages re-fetches."""
+    st.session_state.pop("escalations", None)
+    st.session_state.pop("drafts", None)
+
+
 async def _run_many(graph, tickets: list[dict]) -> dict[str, dict]:
     return {ticket["id"]: await review.run_ticket(graph, ticket) for ticket in tickets}
 
 
-def _report_run_results(results: dict[str, dict]) -> None:
-    for ticket_id, result in results.items():
-        if "__interrupt__" in result:
-            st.info(f"{ticket_id}: paused for human review")
-        else:
-            st.success(f"{ticket_id}: {result.get('decision')} — {result.get('response_text')!r}")
+def _render_run_result(ticket_id: str, result: dict) -> None:
+    with st.container(border=True):
+        interrupts = result.get("__interrupt__")
+        if interrupts:
+            payload = interrupts[0].value if isinstance(interrupts[0].value, dict) else {}
+            reason = payload.get("reason")
+            st.warning(f"**{ticket_id}** — ⏸️ escalated for human review" + (f" ({reason})" if reason else ""))
+            return
+
+        decision = result.get("decision")
+        category = result.get("category")
+        confidence = result.get("confidence")
+        header = f"**{ticket_id}** — `{decision}`"
+        if category:
+            header += f" · {category}"
+        if confidence is not None:
+            header += f" · confidence {confidence:.2f}"
+        st.markdown(header)
+        if result.get("response_text"):
+            st.text_area(
+                "Response", value=result["response_text"], height=150, disabled=True, key=f"result_{ticket_id}"
+            )
 
 
-st.title("Support Ticket Triage")
+st.sidebar.title("Ticket Triage")
+page = st.sidebar.radio(
+    "Navigate",
+    ["Run sample tickets", "Test a ticket manually", "Escalations", "Drafts for review"],
+    label_visibility="collapsed",
+)
 
-with st.expander("Run tickets through the pipeline"):
+if page == "Run sample tickets":
+    st.title("Run sample tickets")
     tickets = review.load_tickets()
     options = {t["id"]: t for t in tickets}
     selected = st.multiselect("Tickets", options=list(options.keys()))
 
+    for tid in selected:
+        t = options[tid]
+        with st.expander(f"{tid} — {t['subject']}"):
+            st.markdown(f"**From:** {t['from_name']} <{t['from_email']}>")
+            st.markdown(t["body"])
+
     col1, col2 = st.columns(2)
-    if col1.button("Run selected", disabled=not selected):
-        _report_run_results(call(lambda graph: _run_many(graph, [options[i] for i in selected])))
-    if col2.button("Run all"):
-        _report_run_results(call(lambda graph: _run_many(graph, tickets)))
+    run_selected = col1.button("Run selected", disabled=not selected)
+    run_all = col2.button("Run all")
 
-st.divider()
+    if run_selected or run_all:
+        batch = [options[i] for i in selected] if run_selected else tickets
+        results = call(lambda graph: _run_many(graph, batch))
+        _invalidate_queues()
+        st.subheader("Results")
+        for tid, result in results.items():
+            _render_run_result(tid, result)
 
-tab_escalations, tab_drafts = st.tabs(["🚨 Escalations", "📝 Drafts for review"])
+elif page == "Test a ticket manually":
+    st.title("Test a ticket manually")
+    st.caption("Paste in ticket content — e.g. something that arrived from an outside inbox — and run it through the pipeline right away.")
 
-with tab_escalations:
-    escalations = call(review.list_escalations)
+    with st.form("manual_ticket_form"):
+        ticket_id = st.text_input("Ticket ID")
+        col1, col2 = st.columns(2)
+        from_name = col1.text_input("From name")
+        from_email = col2.text_input("From email")
+        subject = st.text_input("Subject")
+        body = st.text_area("Body", height=200)
+        submitted = st.form_submit_button("Run through pipeline")
+
+    if submitted:
+        if not all([ticket_id, from_name, from_email, subject, body]):
+            st.error("All fields are required.")
+        else:
+            if call_db(lambda: review.ticket_exists(ticket_id)):
+                st.warning(f"Ticket ID '{ticket_id}' already exists — running this will overwrite it.")
+
+            ticket = {
+                "id": ticket_id,
+                "from_name": from_name,
+                "from_email": from_email,
+                "subject": subject,
+                "body": body,
+            }
+            result = call(lambda graph: review.run_ticket(graph, ticket))
+            _invalidate_queues()
+            st.subheader("Result")
+            _render_run_result(ticket_id, result)
+
+elif page == "Escalations":
+    st.title("🚨 Escalations")
+    if "escalations" not in st.session_state:
+        st.session_state.escalations = call(review.list_escalations)
+    if st.button("🔄 Refresh"):
+        st.session_state.escalations = call(review.list_escalations)
+
+    escalations = st.session_state.escalations
     if not escalations:
         st.write("Nothing pending.")
     for esc in escalations:
         with st.container(border=True):
             st.subheader(esc["ticket_id"])
-            st.caption(f"Category: {esc.get('category')} · Reason: {esc.get('reason')}")
-            st.write(f"**From:** {esc.get('from_name')} <{esc.get('from_email')}>")
-            st.write(f"**Subject:** {esc.get('subject')}")
-            st.write(esc.get("body"))
+            st.caption(" · ".join(filter(None, [esc.get("category"), esc.get("reason")])))
+            st.markdown(f"**From:** {esc.get('from_name')} <{esc.get('from_email')}>")
+            st.markdown(f"**Subject:** {esc.get('subject')}")
+            st.markdown(esc.get("body") or "")
 
-            response = st.text_area("Response to send", key=f"resp_{esc['ticket_id']}")
+            response = st.text_area("Response to send", key=f"resp_{esc['ticket_id']}", height=150)
             resolved_by = st.text_input("Your name/email", key=f"by_{esc['ticket_id']}")
 
             c1, c2 = st.columns(2)
             if c1.button("Send response", key=f"send_{esc['ticket_id']}", disabled=not response):
                 call(lambda graph, tid=esc["ticket_id"]: review.resolve_escalation(graph, tid, response, resolved_by))
+                _invalidate_queues()
                 st.rerun()
             if c2.button("Reject / close", key=f"reject_{esc['ticket_id']}"):
                 call(lambda graph, tid=esc["ticket_id"]: review.resolve_escalation(graph, tid, None, resolved_by))
+                _invalidate_queues()
                 st.rerun()
 
-with tab_drafts:
-    drafts = call_db(review.list_drafts)
+elif page == "Drafts for review":
+    st.title("📝 Drafts for review")
+    if "drafts" not in st.session_state:
+        st.session_state.drafts = call(review.list_drafts)
+    if st.button("🔄 Refresh"):
+        st.session_state.drafts = call(review.list_drafts)
+
+    drafts = st.session_state.drafts
     if not drafts:
         st.write("Nothing pending.")
-    for row in drafts:
+    for d in drafts:
         with st.container(border=True):
-            st.subheader(row.ticket_id)
-            edited = st.text_area("Draft response", value=row.response_text or "", key=f"draft_{row.ticket_id}")
+            st.subheader(d["ticket_id"])
+            st.caption(d.get("category") or "")
+            st.markdown(f"**From:** {d.get('from_name')} <{d.get('from_email')}>")
+            st.markdown(f"**Subject:** {d.get('subject')}")
+            with st.expander("Original ticket body"):
+                st.markdown(d.get("body") or "")
+
+            edited = st.text_area(
+                "Draft response", value=d.get("response_text") or "", key=f"draft_{d['ticket_id']}", height=250
+            )
 
             c1, c2 = st.columns(2)
-            if c1.button("Approve / save", key=f"approve_{row.ticket_id}"):
-                call_db(lambda tid=row.ticket_id, text=edited: review.resolve_draft(tid, text, reject=False))
+            if c1.button("Approve / save", key=f"approve_{d['ticket_id']}"):
+                call_db(lambda tid=d["ticket_id"], text=edited: review.resolve_draft(tid, text, reject=False))
+                _invalidate_queues()
                 st.rerun()
-            if c2.button("Reject", key=f"draft_reject_{row.ticket_id}"):
-                call_db(lambda tid=row.ticket_id: review.resolve_draft(tid, None, reject=True))
+            if c2.button("Reject", key=f"draft_reject_{d['ticket_id']}"):
+                call_db(lambda tid=d["ticket_id"]: review.resolve_draft(tid, None, reject=True))
+                _invalidate_queues()
                 st.rerun()
