@@ -58,26 +58,33 @@ async def _run_many(graph, tickets: list[dict]) -> dict[str, dict]:
 
 def _render_run_result(ticket_id: str, result: dict) -> None:
     with st.container(border=True):
+        st.markdown(f"#### {ticket_id}")
+
         interrupts = result.get("__interrupt__")
         if interrupts:
             payload = interrupts[0].value if isinstance(interrupts[0].value, dict) else {}
             reason = payload.get("reason")
-            st.warning(f"**{ticket_id}** — ⏸️ escalated for human review" + (f" ({reason})" if reason else ""))
+            st.warning("🚨 Escalated for human review" + (f" — {reason}" if reason else ""))
             return
 
         decision = result.get("decision")
         category = result.get("category")
         confidence = result.get("confidence")
-        header = f"**{ticket_id}** — `{decision}`"
-        if category:
-            header += f" · {category}"
-        if confidence is not None:
-            header += f" · confidence {confidence:.2f}"
-        st.markdown(header)
+
+        status = {
+            "auto_resolve": ("✅", "Auto-resolved — sent"),
+            "draft_for_review": ("📝", "Drafted — pending review"),
+            "escalate": ("🚨", "Escalated"),
+        }.get(decision, ("❔", decision or "unknown"))
+        st.markdown(f"{status[0]} **{status[1]}**")
+
+        c1, c2 = st.columns(2)
+        c1.metric("Category", category or "—")
+        c2.metric("Confidence", f"{confidence:.0%}" if confidence is not None else "—")
+
         if result.get("response_text"):
-            st.text_area(
-                "Response", value=result["response_text"], height=150, disabled=True, key=f"result_{ticket_id}"
-            )
+            st.caption("Response")
+            st.text(result["response_text"])
 
 
 st.sidebar.title("Ticket Triage")
@@ -122,7 +129,7 @@ elif page == "Test a ticket manually":
         from_email = col2.text_input("From email")
         subject = st.text_input("Subject")
         body = st.text_area("Body", height=200)
-        submitted = st.form_submit_button("Run through pipeline")
+        submitted = st.form_submit_button("Run")
 
     if submitted:
         if not all([ticket_id, from_name, from_email, subject, body]):
