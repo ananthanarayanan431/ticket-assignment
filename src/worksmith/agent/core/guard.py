@@ -23,7 +23,8 @@ def get_client(settings: OpenRouterSettings) -> AsyncOpenAI:
 
 
 async def call_llm(
-    prompt: str,
+    system_prompt: str,
+    user_content: str,
     response_model: type[ResponseModelT],
     *,
     model: str,
@@ -31,6 +32,14 @@ async def call_llm(
     temperature: float,
     settings: OpenRouterSettings,
 ) -> ResponseModelT:
+    """
+    system_prompt carries trusted task instructions; user_content carries the
+    (untrusted, customer-supplied) ticket data. Keeping them in separate
+    message roles, rather than concatenating everything into one user
+    string, is what lets the model tell "what to do" apart from "text to
+    analyze" — see agent/prompts/security.py for the accompanying framing
+    applied to user_content.
+    """
 
     llm_client = get_client(settings)
 
@@ -39,7 +48,10 @@ async def call_llm(
             model=model,
             max_tokens=max_tokens,
             temperature=temperature,
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_content},
+            ],
             response_format=response_model,
         )
     except APITimeoutError as e:

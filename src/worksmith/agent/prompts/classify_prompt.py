@@ -1,3 +1,5 @@
+from .security import UNTRUSTED_CONTENT_NOTICE, wrap_untrusted
+
 CATEGORIES = (
     "billing",
     "account_deletion",
@@ -11,9 +13,9 @@ CATEGORIES = (
 )
 
 
-def build_classify_prompt(subject: str, body: str) -> str:
+def build_classify_prompt(subject: str, body: str) -> tuple[str, str]:
     categories = ", ".join(CATEGORIES)
-    return (
+    system_prompt = (
         f"Classify this support ticket into exactly one of these categories: {categories}.\n\n"
         "Category definitions:\n"
         "- billing: anything involving money — invoices, charges, refunds, cancellations, pricing.\n"
@@ -33,5 +35,7 @@ def build_classify_prompt(subject: str, body: str) -> str:
         "An angry customer with a simple request (e.g. an address change) is still "
         "a simple, high-confidence request; tone is not evidence of complexity. "
         "Return JSON with keys: category, confidence (0-1).\n\n"
-        f"Subject: {subject}\nBody: {body}"
+        f"{UNTRUSTED_CONTENT_NOTICE}"
     )
+    user_content = wrap_untrusted("ticket", f"Subject: {subject}\nBody: {body}")
+    return system_prompt, user_content

@@ -8,7 +8,7 @@ from ..state import TicketState
 
 @guarded_llm_node("draft_for_review")
 async def draft_for_review(state: TicketState) -> dict:
-    prompt = build_draft_for_review_prompt(
+    system_prompt, user_content = build_draft_for_review_prompt(
         state["category"],
         state.get("extracted_fields", {}),
         state["body"],
@@ -16,7 +16,8 @@ async def draft_for_review(state: TicketState) -> dict:
         state["from_email"],
     )
     result = await call_llm(
-        prompt,
+        system_prompt,
+        user_content,
         DraftResponse,
         model=draft_for_review_llm_settings.draft_for_review_llm_model,
         max_tokens=draft_for_review_llm_settings.draft_for_review_max_tokens,

@@ -8,9 +8,10 @@ from ..state import TicketState
 
 @guarded_llm_node("classify")  # failure here has no category to route on -> hard escalate
 async def classify(state: TicketState) -> dict:
-    prompt = build_classify_prompt(state["subject"], state["body"])
+    system_prompt, user_content = build_classify_prompt(state["subject"], state["body"])
     result = await call_llm(
-        prompt,
+        system_prompt,
+        user_content,
         ClassificationResponse,
         model=classification_llm_settings.classification_llm_model,
         max_tokens=classification_llm_settings.classification_max_tokens,
