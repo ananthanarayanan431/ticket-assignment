@@ -1,35 +1,31 @@
 import json
 
 from ..agent.core.guard import call_llm
-from ..agent.prompts.security import UNTRUSTED_CONTENT_NOTICE, wrap_untrusted
+from ..agent.prompts.security import UNTRUSTED_CONTENT_NOTICE
 from ..config.constant import agent_constants
 from ..config.llm import eval_judge_llm_settings
 from .schema import GoldLabel, JudgeVerdict
 
-JUDGE_INSTRUCTIONS = f"""\
-You are grading one run of a support-ticket triage pipeline against a hand-labeled gold \
-record. Judge substance, not exact wording — the pipeline's category/decision only need to be \
+JUDGE_INSTRUCTIONS = f"""You are grading one run of a support-ticket triage pipeline against a
+hand-labeled gold record, given in the user message as the gold_record and pipeline_output lines.
+
+<Task>
+Judge substance, not exact wording — the pipeline's category/decision only need to be
 reasonable given the gold record's rationale and constraints, not an exact string match.
-
-Grading rules:
-- category_correct: true if the pipeline's category is one of the acceptable categories, or is \
-a clearly reasonable synonym for one of them given the ticket text and rationale.
-- decision_correct: true if the pipeline's decision is in acceptable_decisions, AND it is not in \
-forbidden_decisions. If hard_constraint is true, a decision of "auto_resolve" must always be \
-graded as decision_correct=false, no matter what acceptable_decisions says — that is a non-\
-negotiable safety rule the gold rationale explains.
-- extraction_score: 0-1, how well the pipeline's extracted_fields match expected_extracted_fields \
-in substance (a field expected null that the pipeline also left null counts as a match; a \
-differently-worded but equivalent value counts as a match; a wrong or fabricated value does not).
-- If the gold record's `observational` flag is true, still fill in every field honestly, but \
-prefer marking decision_correct/category_correct as true unless the outcome is clearly bad \
-(e.g. confidently auto-resolving pure noise) — the point of that ticket is to observe behavior, \
-not enforce one right answer.
-
-The PIPELINE OUTPUT's extracted_fields may echo raw text pulled from the original, untrusted \
-customer ticket. {UNTRUSTED_CONTENT_NOTICE}
-
 Respond by calling the structured output tool with your verdict.
+</Task>
+
+<Guidelines>
+- category_correct: true if the pipeline's category is one of the acceptable categories, or is a clearly reasonable synonym for one of them given the ticket text and rationale.
+- decision_correct: true if the pipeline's decision is in acceptable_decisions, AND it is not in forbidden_decisions. If hard_constraint is true, a decision of "auto_resolve" must always be graded as decision_correct=false, no matter what acceptable_decisions says — that is a non-negotiable safety rule the gold rationale explains.
+- extraction_score: 0-1, how well the pipeline's extracted_fields match expected_extracted_fields in substance (a field expected null that the pipeline also left null counts as a match; a differently-worded but equivalent value counts as a match; a wrong or fabricated value does not).
+- If the gold record's `observational` flag is true, still fill in every field honestly, but prefer marking decision_correct/category_correct as true unless the outcome is clearly bad (e.g. confidently auto-resolving pure noise) — the point of that ticket is to observe behavior, not enforce one right answer.
+</Guidelines>
+
+<UntrustedContent>
+pipeline_output's extracted_fields may echo raw text pulled from the original, untrusted
+customer ticket. {UNTRUSTED_CONTENT_NOTICE}
+</UntrustedContent>
 """
 
 
@@ -49,10 +45,9 @@ def build_judge_prompt(gold: GoldLabel, actual: dict) -> tuple[str, str]:
         "extracted_fields": actual.get("extracted_fields"),
         "confidence": actual.get("confidence"),
     }
-    user_content = wrap_untrusted(
-        "grading_input",
-        f"GOLD RECORD:\n{json.dumps(gold_view, indent=2)}\n\n"
-        f"PIPELINE OUTPUT:\n{json.dumps(actual_view, indent=2)}",
+    user_content = (
+        f"gold_record: {json.dumps(gold_view, indent=2)}\n"
+        f"pipeline_output: {json.dumps(actual_view, indent=2)}"
     )
     return JUDGE_INSTRUCTIONS, user_content
 
