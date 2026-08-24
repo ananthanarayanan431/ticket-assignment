@@ -39,12 +39,3 @@ async def route_decision(state: TicketState) -> dict:
         "decision": decision,
         "trail": await _log(state, "route_decision", decision=decision, reason=reason, combined_confidence=combined),
     }
-
-
-async def auto_resolve(state: TicketState) -> dict:
-    template = f"[canned reply for category={state['category']}]"
-    return {
-        "response_text": template,
-        "queued_for_human": False,
-        "trail": await _log(state, "auto_resolve", sent=True, response_text=template),
-    }

@@ -28,6 +28,12 @@ class DraftForReviewLLMSettings(OpenRouterSettings):
     draft_for_review_max_tokens: int = 1024
 
 
+class AutoResolveLLMSettings(OpenRouterSettings):
+    auto_resolve_llm_model: str = "openai/gpt-4o-mini"
+    auto_resolve_temperature: float = 0
+    auto_resolve_max_tokens: int = 1024
+
+
 class EvalJudgeLLMSettings(OpenRouterSettings):
     eval_judge_llm_model: str = "openai/gpt-4.1-mini"
     eval_judge_temperature: float = 0
@@ -37,4 +43,5 @@ class EvalJudgeLLMSettings(OpenRouterSettings):
 classification_llm_settings = ClassificationLLMSettings()
 extraction_llm_settings = ExtractionLLMSettings()
 draft_for_review_llm_settings = DraftForReviewLLMSettings()
+auto_resolve_llm_settings = AutoResolveLLMSettings()
 eval_judge_llm_settings = EvalJudgeLLMSettings()

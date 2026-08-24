@@ -1,8 +1,8 @@
 from langgraph.graph import END, StateGraph
 
 from .edge import classify_router, route_selector
-from .nodes import classify, draft_for_review, escalate, extract
-from .route import auto_resolve, route_decision
+from .nodes import auto_resolve, classify, close_spam, draft_for_review, escalate, extract
+from .route import route_decision
 from .state import TicketState
 
 
@@ -20,6 +20,7 @@ def build_graph(checkpointer):
 
     graph.add_node("classify", classify)
     graph.add_node("extract", extract)
+    graph.add_node("close_spam", close_spam)
     graph.add_node("route_decision", route_decision)
     graph.add_node("auto_resolve", auto_resolve)
     graph.add_node("draft_for_review", draft_for_review)
@@ -33,9 +34,11 @@ def build_graph(checkpointer):
         {
             "extract": "extract",
             "skip_extract": "route_decision",
+            "close_spam": "close_spam",
         },
     )
     graph.add_edge("extract", "route_decision")
+    graph.add_edge("close_spam", END)
 
     graph.add_conditional_edges(
         "route_decision",
