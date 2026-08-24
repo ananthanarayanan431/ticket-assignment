@@ -1,7 +1,7 @@
 from langgraph.graph import END, StateGraph
 
 from .edge import classify_router, route_selector
-from .log import audit_log
+from .core.log import audit_log
 from .nodes import classify, draft_for_review, escalate, extract
 from .route import auto_resolve, route_decision
 from .state import TicketState

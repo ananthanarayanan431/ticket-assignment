@@ -1,9 +1,9 @@
 import time
 
 from sqlalchemy.dialects.postgresql import insert as pg_insert
-from ..db.postgres import get_session_factory
-from ..models import Ticket
-from .state import TicketState, TrailEntry
+from ...db.postgres import get_session_factory
+from ...models import Ticket
+from ..state import TicketState, TrailEntry
 
 
 async def audit_log(state: TicketState) -> dict:

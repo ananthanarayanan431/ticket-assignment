@@ -8,6 +8,8 @@ class TrailEntry(TypedDict):
  
 class TicketState(TypedDict, total=False):
     ticket_id: str
+    from_name: str
+    from_email: str
     subject: str
     body: str
  

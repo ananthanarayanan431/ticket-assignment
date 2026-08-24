@@ -1,7 +1,7 @@
 from ...config.llm import classification_llm_settings
 from ...schema.classification import ClassificationResponse
-from ..guard import call_llm, guarded_llm_node
-from ..log import _log
+from ..core.guard import call_llm, guarded_llm_node
+from ..core.log import _log
 from ..prompts.classify_prompt import build_classify_prompt
 from ..state import TicketState
 

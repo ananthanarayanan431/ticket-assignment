@@ -83,6 +83,7 @@ with tab_escalations:
         with st.container(border=True):
             st.subheader(esc["ticket_id"])
             st.caption(f"Category: {esc.get('category')} · Reason: {esc.get('reason')}")
+            st.write(f"**From:** {esc.get('from_name')} <{esc.get('from_email')}>")
             st.write(f"**Subject:** {esc.get('subject')}")
             st.write(esc.get("body"))
 

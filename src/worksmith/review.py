@@ -30,7 +30,13 @@ async def pending_escalation(graph, ticket_id: str):
 
 async def run_ticket(graph, ticket: dict) -> dict:
     config = {"configurable": {"thread_id": ticket["id"]}}
-    initial_state = {"ticket_id": ticket["id"], "subject": ticket["subject"], "body": ticket["body"]}
+    initial_state = {
+        "ticket_id": ticket["id"],
+        "from_name": ticket["from_name"],
+        "from_email": ticket["from_email"],
+        "subject": ticket["subject"],
+        "body": ticket["body"],
+    }
     return await graph.ainvoke(initial_state, config=config)
 
 

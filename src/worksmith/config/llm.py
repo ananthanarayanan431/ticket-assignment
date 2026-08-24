@@ -29,8 +29,6 @@ class DraftForReviewLLMSettings(OpenRouterSettings):
 
 
 class EvalJudgeLLMSettings(OpenRouterSettings):
-    # Deliberately different from the pipeline's own gpt-4o-mini, so grading
-    # isn't a model judging its own output.
     eval_judge_llm_model: str = "openai/gpt-4.1-mini"
     eval_judge_temperature: float = 0
     eval_judge_max_tokens: int = 1024

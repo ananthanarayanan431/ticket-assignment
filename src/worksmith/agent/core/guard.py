@@ -3,10 +3,10 @@ from typing import TypeVar
 from openai import APIConnectionError, APIStatusError, APITimeoutError, AsyncOpenAI
 from pydantic import BaseModel, ValidationError
 
-from ..config.llm import OpenRouterSettings
+from ...config.llm import OpenRouterSettings
 from .exceptions import LLMCallError
 from .log import _log
-from .state import TicketState
+from ..state import TicketState
 
 client: AsyncOpenAI | None = None
 
@@ -31,13 +31,7 @@ async def call_llm(
     temperature: float,
     settings: OpenRouterSettings,
 ) -> ResponseModelT:
-    """
-    Calls the given LLM (any model routable through OpenRouter's
-    OpenAI-compatible API) and parses its reply into `response_model`, per
-    the model's structured-output schema. Model/token/temperature come from
-    the caller's own task-specific settings (e.g. ClassificationLLMSettings),
-    keeping this function agnostic of any one task.
-    """
+
     llm_client = get_client(settings)
 
     try:

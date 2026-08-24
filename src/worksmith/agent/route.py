@@ -1,5 +1,5 @@
 from ..config.constant import agent_constants
-from .log import _log
+from .core.log import _log
 from .state import TicketState
 
 

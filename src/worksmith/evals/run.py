@@ -45,6 +45,8 @@ async def run_eval() -> list[dict]:
             config = {"configurable": {"thread_id": f"{EVAL_ID_PREFIX}{ticket['id']}"}}
             initial_state = {
                 "ticket_id": f"{EVAL_ID_PREFIX}{ticket['id']}",
+                "from_name": ticket["from_name"],
+                "from_email": ticket["from_email"],
                 "subject": ticket["subject"],
                 "body": ticket["body"],
             }
