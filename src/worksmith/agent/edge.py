@@ -17,8 +17,6 @@ def classify_router(state: TicketState) -> str:
         target = "skip_extract"
     elif state.get("category") in agent_constants.no_reply_categories:
         target = "close_spam"
-    elif state.get("category") in agent_constants.no_extraction_needed_categories:
-        target = "skip_extract"
     else:
         target = "extract"
 

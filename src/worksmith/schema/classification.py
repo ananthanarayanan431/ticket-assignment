@@ -2,9 +2,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-# Must stay in sync with agent_constants.hard_constraint_categories and
-# .no_extraction_needed_categories (config/constant.py), which key off these
-# exact values — a free-text category here would silently break routing.
 Category = Literal[
     "billing",
     "account_deletion",
