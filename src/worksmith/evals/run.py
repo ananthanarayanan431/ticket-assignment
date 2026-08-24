@@ -15,7 +15,7 @@ from pathlib import Path
 from ..agent.graph import build_graph
 from ..db.checkpointer import get_checkpointer
 from ..db.postgres import dispose_engine
-from ..review import load_tickets
+from ..agent.review import load_tickets
 from .grade import grade_ticket
 from .schema import GoldLabel
 

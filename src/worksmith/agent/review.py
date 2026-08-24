@@ -9,8 +9,8 @@ from importlib import resources
 from langgraph.types import Command
 from sqlalchemy import select, text
 
-from .db.postgres import get_session_factory
-from .models import Ticket
+from ..db.postgres import get_session_factory
+from ..models import Ticket
 
 TICKETS_FILE = resources.files("worksmith.data").joinpath("tickets.json")
 

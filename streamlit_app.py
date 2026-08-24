@@ -8,7 +8,7 @@ import asyncio
 
 import streamlit as st
 
-from worksmith import review
+from worksmith.agent import review
 from worksmith.agent.graph import build_graph
 from worksmith.db.checkpointer import get_checkpointer
 from worksmith.db.postgres import dispose_engine
