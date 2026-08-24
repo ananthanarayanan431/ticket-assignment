@@ -11,7 +11,4 @@ wheels/
 
 .env
 
-# Eval harness run output
-src/worksmith/evals/results/
-
 .ruff_cache/
