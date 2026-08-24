@@ -24,5 +24,5 @@ async def extract(state: TicketState) -> dict:
         "extracted_fields": result.extracted_fields.model_dump(),
         "extraction_confidence": result.confidence,
         "extraction_failed": False,
-        "trail": _log(state, "extract", confidence=result.confidence),
+        "trail": await _log(state, "extract", confidence=result.confidence),
     }

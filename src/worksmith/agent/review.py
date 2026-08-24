@@ -42,9 +42,11 @@ async def run_ticket(graph, ticket: dict) -> dict:
 
 async def list_escalations(graph) -> list[dict]:
     """
-    A paused escalation hasn't reached audit_log yet, so it's never in
-    `tickets` — the checkpointer's own thread ids are the only place pending
-    runs are visible.
+    escalate() pauses on interrupt() before it can persist its own trail
+    entry, so a ticket paused there has a `tickets` row only up through
+    route_decision (decision="escalate", resolved=False) — no response_text
+    or interrupt payload yet. The checkpointer's thread ids remain the
+    reliable way to find pending runs and their interrupt payload.
     """
     session_factory = get_session_factory()
     async with session_factory() as session:

@@ -4,7 +4,7 @@ from ..core.log import _log
 from ..state import TicketState
 
 
-def escalate(state: TicketState) -> dict:
+async def escalate(state: TicketState) -> dict:
     """Escalate to Human for their comments"""
     decision = interrupt(
         {
@@ -21,5 +21,11 @@ def escalate(state: TicketState) -> dict:
     return {
         "response_text": decision.get("response_text"),
         "queued_for_human": True,
-        "trail": _log(state, "escalate", queued=True, resolved_by=decision.get("resolved_by")),
+        "trail": await _log(
+            state,
+            "escalate",
+            queued=True,
+            resolved_by=decision.get("resolved_by"),
+            response_text=decision.get("response_text"),
+        ),
     }

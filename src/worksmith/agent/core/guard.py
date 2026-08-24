@@ -90,7 +90,7 @@ def guarded_llm_node(node_name: str, *, on_error_updates=None):
                     if on_error_updates is not None
                     else {"hard_constraint_flag": True, "failure_reason": f"{node_name} failed: {e}"}
                 )
-                return {**updates, "trail": _log(state, node_name, error=str(e))}
+                return {**updates, "trail": await _log(state, node_name, error=str(e))}
 
         wrapped.__name__ = fn.__name__
         return wrapped

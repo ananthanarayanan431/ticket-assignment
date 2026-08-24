@@ -1,7 +1,6 @@
 from langgraph.graph import END, StateGraph
 
 from .edge import classify_router, route_selector
-from .core.log import audit_log
 from .nodes import classify, draft_for_review, escalate, extract
 from .route import auto_resolve, route_decision
 from .state import TicketState
@@ -12,6 +11,10 @@ def build_graph(checkpointer):
     `checkpointer` is required — escalate() calls interrupt() to pause the
     run for human review, and LangGraph needs a checkpointer to persist that
     paused state so it can be resumed later (see db.checkpointer.get_checkpointer).
+
+    There's no dedicated audit-log node: every node persists its own trail
+    entry to Postgres as it runs (via agent.core.log._log), so the audit
+    trail is durable step-by-step instead of only once at the end of the run.
     """
     graph = StateGraph(TicketState)
 
@@ -21,7 +24,6 @@ def build_graph(checkpointer):
     graph.add_node("auto_resolve", auto_resolve)
     graph.add_node("draft_for_review", draft_for_review)
     graph.add_node("escalate", escalate)
-    graph.add_node("audit_log", audit_log)
 
     graph.set_entry_point("classify")
 
@@ -45,9 +47,8 @@ def build_graph(checkpointer):
         },
     )
 
-    graph.add_edge("auto_resolve", "audit_log")
-    graph.add_edge("draft_for_review", "audit_log")
-    graph.add_edge("escalate", "audit_log")
-    graph.add_edge("audit_log", END)
+    graph.add_edge("auto_resolve", END)
+    graph.add_edge("draft_for_review", END)
+    graph.add_edge("escalate", END)
 
     return graph.compile(checkpointer=checkpointer)

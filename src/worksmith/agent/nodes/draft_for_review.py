@@ -28,5 +28,5 @@ async def draft_for_review(state: TicketState) -> dict:
     return {
         "response_text": result.draft,
         "queued_for_human": True,
-        "trail": _log(state, "draft_for_review", queued=True),
+        "trail": await _log(state, "draft_for_review", queued=True, response_text=result.draft),
     }

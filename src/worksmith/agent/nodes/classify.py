@@ -22,5 +22,5 @@ async def classify(state: TicketState) -> dict:
     return {
         "category": result.category,
         "classification_confidence": result.confidence,
-        "trail": _log(state, "classify", category=result.category, confidence=result.confidence),
+        "trail": await _log(state, "classify", category=result.category, confidence=result.confidence),
     }

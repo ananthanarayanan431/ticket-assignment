@@ -3,12 +3,12 @@ from .core.log import _log
 from .state import TicketState
 
 
-def route_decision(state: TicketState) -> dict:
+async def route_decision(state: TicketState) -> dict:
     """
     Deterministic gate — no LLM call. Combines classification_confidence and
     extraction_confidence (when extraction ran) into the single signal used
-    for thresholding, and sets state["decision"]. Pure function, easy to
-    unit-test against a table of inputs -> expected decisions.
+    for thresholding, and sets state["decision"]. Easy to unit-test against a
+    table of inputs -> expected decisions; the only I/O is the trail persist.
     """
     classification_confidence = state.get("classification_confidence", 0.0)
     extraction_confidence = state.get("extraction_confidence")
@@ -37,14 +37,14 @@ def route_decision(state: TicketState) -> dict:
     return {
         "confidence": combined,
         "decision": decision,
-        "trail": _log(state, "route_decision", decision=decision, reason=reason, combined_confidence=combined),
+        "trail": await _log(state, "route_decision", decision=decision, reason=reason, combined_confidence=combined),
     }
 
 
-def auto_resolve(state: TicketState) -> dict:
+async def auto_resolve(state: TicketState) -> dict:
     template = f"[canned reply for category={state['category']}]"
     return {
         "response_text": template,
         "queued_for_human": False,
-        "trail": _log(state, "auto_resolve", sent=True),
+        "trail": await _log(state, "auto_resolve", sent=True, response_text=template),
     }
