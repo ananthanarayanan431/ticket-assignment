@@ -1,16 +1,18 @@
 from .security import UNTRUSTED_CONTENT_NOTICE
 
-CATEGORIES = (
-    "billing",
-    "account_deletion",
-    "legal",
-    "security",
-    "bug",
-    "feature_request",
-    "account_access",
-    "spam",
-    "other",
-)
+CATEGORIES = {
+    "billing": "anything involving money — invoices, charges, refunds, cancellations, pricing.",
+    "account_deletion": "the customer wants their account or personal data deleted.",
+    "legal": "legal threats, formal compliance requests (e.g. GDPR/CCPA citations), subpoenas.",
+    "security": "a reported vulnerability or security incident, not a routine login problem.",
+    "bug": "something in the product is broken or not working as expected.",
+    "feature_request": "a request for new or changed functionality.",
+    "account_access": "login, password reset, or account-lockout issues with no security vulnerability implicated.",
+    "spam": "unsolicited/promotional content unrelated to support.",
+    "other": "anything that doesn't fit the above (e.g. general feedback, thanks).",
+}
+
+_CATEGORY_DEFINITIONS = "\n".join(f"- {category}: {definition}" for category, definition in CATEGORIES.items())
 
 CLASSIFY_SYSTEM_PROMPT = """You are a support-ticket triage classifier.
 
@@ -20,15 +22,7 @@ Return JSON with keys: category, confidence (0-1).
 </Task>
 
 <CategoryDefinitions>
-- billing: anything involving money — invoices, charges, refunds, cancellations, pricing.
-- account_deletion: the customer wants their account or personal data deleted.
-- legal: legal threats, formal compliance requests (e.g. GDPR/CCPA citations), subpoenas.
-- security: a reported vulnerability or security incident, not a routine login problem.
-- bug: something in the product is broken or not working as expected.
-- feature_request: a request for new or changed functionality.
-- account_access: login, password reset, or account-lockout issues with no security vulnerability implicated.
-- spam: unsolicited/promotional content unrelated to support.
-- other: anything that doesn't fit the above (e.g. general feedback, thanks).
+{definitions}
 </CategoryDefinitions>
 
 <Guidelines>
@@ -39,7 +33,7 @@ Return JSON with keys: category, confidence (0-1).
 <UntrustedContent>
 {notice}
 </UntrustedContent>
-""".format(categories=", ".join(CATEGORIES), notice=UNTRUSTED_CONTENT_NOTICE)
+""".format(categories=", ".join(CATEGORIES), definitions=_CATEGORY_DEFINITIONS, notice=UNTRUSTED_CONTENT_NOTICE)
 
 
 def build_classify_prompt(subject: str, body: str) -> tuple[str, str]:
