@@ -1,5 +1,8 @@
 from ..core.log import _log
+from ..core.logger import get_logger
 from ..state import TicketState
+
+logger = get_logger("nodes.close_spam")
 
 
 async def close_spam(state: TicketState) -> dict:
@@ -9,6 +12,8 @@ async def close_spam(state: TicketState) -> dict:
     so this skips the LLM call entirely rather than spending a request
     writing a reply nobody will read.
     """
+    logger.info("node_start", node="close_spam", ticket_id=state["ticket_id"])
+    logger.info("node_complete", node="close_spam", ticket_id=state["ticket_id"], decision="auto_resolve")
     return {
         "confidence": state.get("classification_confidence", 0.0),
         "decision": "auto_resolve",

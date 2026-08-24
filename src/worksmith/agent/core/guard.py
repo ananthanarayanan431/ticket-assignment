@@ -6,7 +6,10 @@ from pydantic import BaseModel, ValidationError
 from ...config.llm import OpenRouterSettings
 from .exceptions import LLMCallError
 from .log import _log
+from .logger import get_logger
 from ..state import TicketState
+
+logger = get_logger("guard")
 
 client: AsyncOpenAI | None = None
 
@@ -43,6 +46,7 @@ async def call_llm(
 
     llm_client = get_client(settings)
 
+    logger.info("llm_call_start", model=model, max_tokens=max_tokens, temperature=temperature)
     try:
         completion = await llm_client.chat.completions.parse(
             model=model,
@@ -55,15 +59,21 @@ async def call_llm(
             response_format=response_model,
         )
     except APITimeoutError as e:
+        logger.error("llm_call_timeout", model=model, error=str(e))
         raise TimeoutError(str(e)) from e
     except (APIConnectionError, APIStatusError) as e:
+        logger.error("llm_call_failed", model=model, error=str(e))
         raise LLMCallError(str(e)) from e
 
     message = completion.choices[0].message
     if message.refusal:
+        logger.error("llm_call_refused", model=model, refusal=message.refusal)
         raise LLMCallError(f"LLM refused to respond: {message.refusal}")
     if message.parsed is None:
+        logger.error("llm_call_unparseable", model=model)
         raise LLMCallError("LLM response did not match the expected schema.")
+
+    logger.info("llm_call_complete", model=model)
     return message.parsed
 
 
@@ -85,6 +95,13 @@ def guarded_llm_node(node_name: str, *, on_error_updates=None):
             try:
                 return await fn(state)
             except (LLMCallError, TimeoutError, ValidationError, NotImplementedError) as e:
+                logger.error(
+                    "node_failed",
+                    node=node_name,
+                    ticket_id=state.get("ticket_id"),
+                    error=str(e),
+                    exc_info=True,
+                )
                 updates = (
                     on_error_updates(state, e)
                     if on_error_updates is not None

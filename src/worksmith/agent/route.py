@@ -1,6 +1,9 @@
 from ..config.constant import agent_constants
 from .core.log import _log
+from .core.logger import get_logger
 from .state import TicketState
+
+logger = get_logger("route_decision")
 
 
 async def route_decision(state: TicketState) -> dict:
@@ -34,6 +37,14 @@ async def route_decision(state: TicketState) -> dict:
         decision = "escalate"
         reason = "low confidence"
 
+    logger.info(
+        "node_complete",
+        node="route_decision",
+        ticket_id=state["ticket_id"],
+        decision=decision,
+        reason=reason,
+        combined_confidence=combined,
+    )
     return {
         "confidence": combined,
         "decision": decision,

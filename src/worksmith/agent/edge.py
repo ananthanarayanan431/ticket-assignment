@@ -1,5 +1,8 @@
 from ..config.constant import agent_constants
+from .core.logger import get_logger
 from .state import TicketState
+
+logger = get_logger("edge")
 
 
 def classify_router(state: TicketState) -> str:
@@ -11,14 +14,31 @@ def classify_router(state: TicketState) -> str:
     also pointless there (no reliable category to extract against).
     """
     if state.get("hard_constraint_flag"):
-        return "skip_extract"
-    if state.get("category") in agent_constants.no_reply_categories:
-        return "close_spam"
-    if state.get("category") in agent_constants.no_extraction_needed_categories:
-        return "skip_extract"
-    return "extract"
+        target = "skip_extract"
+    elif state.get("category") in agent_constants.no_reply_categories:
+        target = "close_spam"
+    elif state.get("category") in agent_constants.no_extraction_needed_categories:
+        target = "skip_extract"
+    else:
+        target = "extract"
+
+    logger.info(
+        "edge_taken",
+        edge="classify_router",
+        ticket_id=state.get("ticket_id"),
+        category=state.get("category"),
+        target=target,
+    )
+    return target
 
 
 def route_selector(state: TicketState) -> str:
     """The actual conditional-edge function — just reads what route_decision set."""
-    return state["decision"]
+    target = state["decision"]
+    logger.info(
+        "edge_taken",
+        edge="route_selector",
+        ticket_id=state.get("ticket_id"),
+        target=target,
+    )
+    return target
