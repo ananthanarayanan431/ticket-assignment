@@ -1,6 +1,6 @@
 import json
 
-from ..agent.guard import call_llm
+from ..agent.core.guard import call_llm
 from ..config.constant import agent_constants
 from ..config.llm import eval_judge_llm_settings
 from .schema import GoldLabel, JudgeVerdict
