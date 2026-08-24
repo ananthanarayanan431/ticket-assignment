@@ -13,3 +13,5 @@ wheels/
 
 # Eval harness run output
 src/worksmith/evals/results/
+
+.ruff_cache/
