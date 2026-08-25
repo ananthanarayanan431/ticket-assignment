@@ -2,8 +2,8 @@
   "summary": {
     "n": 18,
     "category_accuracy": 1.0,
-    "decision_accuracy": 0.9444444444444444,
-    "mean_extraction_score": 0.6611111111111111,
+    "decision_accuracy": 0.8888888888888888,
+    "mean_extraction_score": 0.6777777777777777,
     "hard_constraint_violations": []
   },
   "results": [
@@ -41,12 +41,12 @@
       },
       "verdict": {
         "category_correct": true,
-        "category_feedback": "The category 'billing' is exactly one of the acceptable categories and fits the ticket content about an invoice question.",
+        "category_feedback": "The category 'billing' matches the acceptable category and is appropriate for the invoice discrepancy question.",
         "decision_correct": true,
-        "decision_feedback": "The decision 'draft_for_review' is one of the acceptable decisions and respects the hard constraint against auto_resolve for billing issues.",
+        "decision_feedback": "The decision 'draft_for_review' is within the acceptable decisions and respects the hard constraint against auto_resolve.",
         "extraction_score": 0.75,
-        "extraction_feedback": "The product_area 'billing' is close but less specific than the expected 'billing/invoicing'. Urgency is missing (expected 'low'), but account_identifier and sentiment match expectations.",
-        "overall_notes": "The pipeline output is reasonable and aligns well with the gold record rationale and constraints. Minor extraction detail differences do not affect the overall correctness."
+        "extraction_feedback": "The product_area is slightly less specific ('billing' vs 'billing/invoicing'), and urgency is missing (expected 'low'), but account_identifier and sentiment match or are acceptable.",
+        "overall_notes": "The pipeline output is reasonable and aligns well with the gold record rationale and constraints, with minor extraction detail differences that do not affect overall correctness."
       }
     },
     {
@@ -71,8 +71,8 @@
       },
       "actual": {
         "category": "bug",
-        "decision": "draft_for_review",
-        "confidence": 0.8,
+        "decision": "auto_resolve",
+        "confidence": 0.85,
         "extracted_fields": {
           "account_identifier": null,
           "product_area": "Reports",
@@ -83,12 +83,12 @@
       },
       "verdict": {
         "category_correct": true,
-        "category_feedback": "The category 'bug' matches the acceptable category and is appropriate given the ticket describes a reproducible bug.",
+        "category_feedback": "The category 'bug' matches the acceptable category and is appropriate given the ticket content and rationale.",
         "decision_correct": true,
-        "decision_feedback": "The decision 'draft_for_review' is one of the acceptable decisions and appropriate given the rationale; no hard constraint forbids it.",
+        "decision_feedback": "The decision 'auto_resolve' is within the acceptable decisions and there is no hard constraint forbidding it, so it is correct.",
         "extraction_score": 0.75,
-        "extraction_feedback": "Product area is close ('Reports' vs 'reports/export'), which is acceptable as a broader category. Sentiment matches as 'neutral'. Account identifier correctly null. Urgency is missing, expected 'medium', so partial match overall.",
-        "overall_notes": "The pipeline correctly identified the category and made an acceptable decision. Extraction is mostly good but missed urgency and was slightly less specific on product area."
+        "extraction_feedback": "The product_area is close but not exact; 'Reports' vs 'reports/export' is a partial match but less specific. Urgency is missing (expected 'medium'), sentiment matches as 'neutral', and account_identifier is correctly null. Overall, extraction is mostly correct but incomplete on urgency and less precise on product_area.",
+        "overall_notes": "The pipeline correctly identified the category and made an acceptable decision. Extraction of fields was mostly accurate but could be improved by specifying the product area more precisely and including the urgency level."
       }
     },
     {
@@ -119,18 +119,18 @@
           "account_identifier": null,
           "product_area": "feature_request",
           "urgency": null,
-          "sentiment": "happy"
+          "sentiment": "positive"
         },
         "interrupted": false
       },
       "verdict": {
         "category_correct": true,
-        "category_feedback": "The pipeline correctly identified the category as 'feature_request', which matches the acceptable category.",
+        "category_feedback": "The pipeline correctly identified the category as 'feature_request', which matches the acceptable category in the gold record.",
         "decision_correct": true,
-        "decision_feedback": "The decision 'auto_resolve' is acceptable and aligns with the gold record's acceptable decisions, and there is no hard constraint forbidding it.",
+        "decision_feedback": "The decision to 'auto_resolve' is acceptable and aligns with the gold record's acceptable decisions, given the low urgency and nature of the request.",
         "extraction_score": 0.5,
-        "extraction_feedback": "The pipeline correctly left 'account_identifier' as null and identified a positive sentiment (though labeled as 'happy' instead of 'positive', which is acceptable). However, it incorrectly labeled 'product_area' as 'feature_request' instead of 'UI/theme' and did not extract 'urgency'.",
-        "overall_notes": "Overall, the pipeline made a reasonable category and decision choice. Extraction of product area and urgency could be improved for better alignment with the gold record."
+        "extraction_feedback": "The pipeline correctly extracted 'account_identifier' as null and 'sentiment' as positive. However, it misclassified 'product_area' as 'feature_request' instead of 'UI/theme' and did not extract 'urgency', which should be 'low'.",
+        "overall_notes": "Overall, the pipeline made a reasonable category and decision choice. Extraction of product area and urgency could be improved for better accuracy."
       }
     },
     {
@@ -155,8 +155,8 @@
       },
       "actual": {
         "category": "account_access",
-        "decision": "draft_for_review",
-        "confidence": 0.75,
+        "decision": "auto_resolve",
+        "confidence": 0.85,
         "extracted_fields": {
           "account_identifier": null,
           "product_area": "account_access",
@@ -168,11 +168,11 @@
       "verdict": {
         "category_correct": true,
         "category_feedback": "The category 'account_access' matches the acceptable category and is appropriate for a login/password-reset issue.",
-        "decision_correct": true,
-        "decision_feedback": "The decision 'draft_for_review' is within the acceptable decisions and appropriate given the need for troubleshooting rather than auto-resolve.",
+        "decision_correct": false,
+        "decision_feedback": "The decision 'auto_resolve' is discouraged because the issue requires troubleshooting rather than a generic canned reply. The acceptable decisions are 'draft_for_review' or 'escalate'.",
         "extraction_score": 0.5,
-        "extraction_feedback": "The 'account_identifier' matches as null. However, 'product_area' should be 'authentication' but was labeled 'account_access'. 'Urgency' is 'medium' in gold but 'high' in output. 'Sentiment' is 'neutral' in gold but 'frustrated' in output. These differences reduce the extraction score.",
-        "overall_notes": "Overall, the pipeline correctly categorized and made an acceptable decision. Extraction of fields shows some discrepancies, particularly in product_area, urgency, and sentiment, which should be improved for better alignment with the gold record."
+        "extraction_feedback": "The 'account_identifier' matches (null). However, 'product_area' should be 'authentication' but was labeled 'account_access'. 'Urgency' should be 'medium' but was labeled 'high'. 'Sentiment' should be 'neutral' but was labeled 'frustrated'.",
+        "overall_notes": "The category is correct, but the decision to auto_resolve is not appropriate given the rationale. Extraction of fields shows some mismatch in product_area, urgency, and sentiment, indicating partial but not full accuracy."
       }
     },
     {
@@ -213,8 +213,8 @@
         "decision_correct": true,
         "decision_feedback": "The decision 'draft_for_review' is one of the acceptable decisions and respects the hard constraint forbidding auto_resolve, making it correct.",
         "extraction_score": 0.9,
-        "extraction_feedback": "The extracted fields mostly match the expected fields. 'product_area' is 'billing' instead of 'billing/subscription', which is a minor difference but still reasonable. 'sentiment' is 'frustrated' instead of 'angry', which is close in meaning. 'account_identifier' and 'urgency' match as expected.",
-        "overall_notes": "The pipeline output aligns well with the gold record's rationale and constraints, correctly identifying the category and making a safe decision. Minor differences in extracted fields do not materially affect the triage outcome."
+        "extraction_feedback": "The extracted product_area 'billing' is acceptable though less specific than 'billing/subscription'. Sentiment 'frustrated' is close to 'angry' and acceptable. Account identifier and urgency match expectations. Overall extraction is good with minor specificity differences.",
+        "overall_notes": "The pipeline output aligns well with the gold record's requirements, correctly categorizing the ticket and choosing an appropriate decision under the hard constraint. Extraction is mostly accurate with slight differences in product_area specificity and sentiment wording, which do not materially affect correctness."
       }
     },
     {
@@ -248,18 +248,18 @@
           "account_identifier": null,
           "product_area": "billing",
           "urgency": "high",
-          "sentiment": "neutral"
+          "sentiment": "frustrated"
         },
         "interrupted": false
       },
       "verdict": {
         "category_correct": true,
-        "category_feedback": "The category 'billing' is correct and aligns with the gold record's rationale to prioritize billing due to the multi-issue nature of the ticket.",
+        "category_feedback": "The pipeline correctly identified the category as 'billing', which is appropriate given the multi-issue nature of the ticket and the presence of a billing concern.",
         "decision_correct": true,
-        "decision_feedback": "The decision 'draft_for_review' is acceptable and complies with the hard constraint that prevents auto_resolve, ensuring human review.",
-        "extraction_score": 0.75,
-        "extraction_feedback": "The extracted 'product_area' is 'billing' instead of the more specific 'dashboard/billing' as expected. 'Urgency' is marked as 'high' instead of 'medium'. 'Account_identifier' and 'sentiment' match correctly.",
-        "overall_notes": "The pipeline correctly prioritized the billing category and chose an appropriate decision. Minor discrepancies in extracted fields do not significantly impact the triage outcome."
+        "decision_feedback": "The decision to 'draft_for_review' is acceptable and aligns with the hard constraint requiring human review for billing issues.",
+        "extraction_score": 0.7,
+        "extraction_feedback": "The product_area is close but less specific than expected ('billing' vs 'dashboard/billing'). Urgency is marked as 'high' instead of 'medium', and sentiment as 'frustrated' instead of 'neutral'. Account identifier correctly null. Overall, partial match with some differences in detail.",
+        "overall_notes": "The pipeline output is reasonable and safe, respecting the hard constraint and choosing the correct category. Extraction details differ somewhat but do not undermine the overall correct handling of the ticket."
       }
     },
     {
@@ -296,12 +296,12 @@
       },
       "verdict": {
         "category_correct": true,
-        "category_feedback": "The category 'account_access' matches the acceptable category and is appropriate for a login/password-reset issue.",
+        "category_feedback": "The category 'account_access' is correct and matches the acceptable category for this ticket, which concerns login/password-reset issues.",
         "decision_correct": false,
-        "decision_feedback": "The decision 'auto_resolve' is not in the acceptable decisions and is incorrect given the rationale; 'draft_for_review' or 'escalate' would be appropriate.",
+        "decision_feedback": "The decision 'auto_resolve' is not acceptable given the acceptable decisions are only 'draft_for_review' or 'escalate'. Also, since hard_constraint is false, auto_resolve is still not listed as acceptable, so this decision is incorrect.",
         "extraction_score": 0.5,
-        "extraction_feedback": "The 'account_identifier' matches (null), but 'product_area' is incorrect ('account_access' instead of 'authentication'), 'urgency' is overstated as 'high' instead of 'medium', and 'sentiment' is 'frustrated' instead of 'neutral'.",
-        "overall_notes": "The category is correct, but the decision is not acceptable. Extraction shows some errors, especially in product_area and urgency, indicating some degradation in language robustness."
+        "extraction_feedback": "The extracted 'account_identifier' matches the expected null. However, 'product_area' is 'account_access' instead of the expected 'authentication', 'urgency' is 'high' instead of 'medium', and 'sentiment' is 'frustrated' instead of 'neutral'. These differences reduce the extraction score.",
+        "overall_notes": "The pipeline correctly identified the category but made an incorrect decision by choosing 'auto_resolve' instead of an acceptable decision. Extraction of fields shows some mismatch, especially in product_area, urgency, and sentiment, indicating some degradation in language robustness for Spanish input."
       }
     },
     {
@@ -338,12 +338,12 @@
       },
       "verdict": {
         "category_correct": true,
-        "category_feedback": "The category 'spam' matches the acceptable category for unsolicited promotional emails unrelated to the product.",
+        "category_feedback": "The category 'spam' matches the acceptable category and is appropriate for the unsolicited promotional email described in the rationale.",
         "decision_correct": true,
-        "decision_feedback": "The decision 'auto_resolve' is acceptable and aligns with the rationale to not escalate spam tickets, which is appropriate here.",
+        "decision_feedback": "The decision 'auto_resolve' is acceptable and aligns with the rationale that spam should be auto-resolved to avoid wasting reviewer time.",
         "extraction_score": 0.75,
-        "extraction_feedback": "The extracted fields mostly match the expected fields. 'account_identifier' is correctly null, 'urgency' and 'sentiment' match. However, 'product_area' was expected to be null but was filled with 'Social Media Services', which is unnecessary for spam and slightly incorrect.",
-        "overall_notes": "The pipeline correctly identified the ticket as spam and chose an appropriate decision. Minor extraction error on 'product_area' does not impact the overall handling of the ticket."
+        "extraction_feedback": "The extracted fields mostly match expectations: 'account_identifier' is null as expected, 'urgency' and 'sentiment' are correct. However, 'product_area' was expected to be null for spam but was filled as 'Social Media Services', which is unnecessary and slightly incorrect.",
+        "overall_notes": "The pipeline correctly identified the ticket as spam and chose an appropriate decision. Minor extraction error on 'product_area' does not impact the overall handling."
       }
     },
     {
@@ -383,12 +383,12 @@
       },
       "verdict": {
         "category_correct": true,
-        "category_feedback": "The category 'bug' is acceptable and reasonable given the vague nature of the ticket and the acceptable categories list.",
+        "category_feedback": "The category 'bug' is reasonable given the vague complaint of something being broken, which fits within the acceptable categories including 'bug' and 'other'.",
         "decision_correct": true,
-        "decision_feedback": "The decision to 'escalate' is within the acceptable decisions and appropriate given the lack of information and the rationale against auto_resolve.",
+        "decision_feedback": "The decision to 'escalate' is appropriate given the lack of information and the rationale that auto_resolve should not be chosen. 'escalate' is within the acceptable decisions.",
         "extraction_score": 1.0,
-        "extraction_feedback": "All extracted fields correctly match the expected null values.",
-        "overall_notes": "The pipeline correctly avoided auto_resolve despite low confidence, appropriately categorized the ticket as 'bug', and chose a suitable decision of 'escalate'."
+        "extraction_feedback": "All expected extracted fields are null as expected, matching the gold record's expectations.",
+        "overall_notes": "The pipeline correctly avoided auto_resolve despite low confidence and chose a reasonable category and decision consistent with the rationale."
       }
     },
     {
@@ -430,10 +430,10 @@
         "category_correct": true,
         "category_feedback": "The category 'account_deletion' is one of the acceptable categories and fits the GDPR data deletion request context well.",
         "decision_correct": true,
-        "decision_feedback": "The decision 'draft_for_review' is one of the acceptable decisions and respects the hard constraint against auto_resolve, making it appropriate for this formal legal request.",
+        "decision_feedback": "The decision 'draft_for_review' is acceptable and aligns with the acceptable decisions given the hard constraint against auto_resolve. Escalate would be stronger, but draft_for_review is still valid.",
         "extraction_score": 0.75,
-        "extraction_feedback": "The 'account_identifier' and 'sentiment' fields match the expected values. However, 'product_area' is labeled as 'account_deletion' instead of the expected 'account/data', and 'urgency' is marked as 'high' instead of 'medium'. These differences reduce the extraction score slightly.",
-        "overall_notes": "The pipeline output is reasonable and safe given the formal GDPR deletion request. The category and decision align well with the gold rationale. Minor discrepancies in extracted fields do not significantly impact the overall correctness."
+        "extraction_feedback": "The product_area should be 'account/data' as per the gold record, but the pipeline output has 'account_deletion'. Urgency is marked as 'high' instead of 'medium'. Sentiment and account_identifier match correctly.",
+        "overall_notes": "The pipeline correctly identified the category and made an acceptable decision respecting the hard constraint. Minor discrepancies in extracted fields do not significantly impact the triage outcome."
       }
     },
     {
@@ -470,12 +470,12 @@
       },
       "verdict": {
         "category_correct": true,
-        "category_feedback": "The category 'billing' matches the acceptable category and is appropriate for a refund request.",
+        "category_feedback": "The pipeline category 'billing' matches the acceptable category and is appropriate for the refund request.",
         "decision_correct": true,
-        "decision_feedback": "The decision 'draft_for_review' is one of the acceptable decisions and respects the hard constraint against auto-resolve for billing/refunds.",
+        "decision_feedback": "The decision 'draft_for_review' is acceptable and respects the hard constraint against auto-resolve for billing/refunds.",
         "extraction_score": 0.75,
-        "extraction_feedback": "The extracted 'product_area' is 'billing' instead of 'billing/subscription', which is close and reasonable. 'urgency' is marked as 'high' instead of 'medium', a slight mismatch. 'account_identifier' and 'sentiment' match correctly.",
-        "overall_notes": "The pipeline output is largely aligned with the gold record. Minor differences in urgency and product_area granularity do not significantly impact the triage decision."
+        "extraction_feedback": "The product_area 'billing' is close but less specific than 'billing/subscription'. Urgency is marked as 'high' instead of 'medium', which is a minor discrepancy. Account identifier and sentiment match well.",
+        "overall_notes": "The pipeline output is reasonable and aligns well with the gold record rationale and constraints. Minor differences in urgency and product area specificity do not materially affect the triage outcome."
       }
     },
     {
@@ -501,23 +501,23 @@
       "actual": {
         "category": "account_deletion",
         "decision": "draft_for_review",
-        "confidence": 0.7,
+        "confidence": 0.75,
         "extracted_fields": {
           "account_identifier": null,
           "product_area": null,
-          "urgency": null,
+          "urgency": "low",
           "sentiment": "neutral"
         },
         "interrupted": false
       },
       "verdict": {
         "category_correct": true,
-        "category_feedback": "The pipeline correctly identified the category as 'account_deletion', which matches the acceptable category for this ticket.",
+        "category_feedback": "The pipeline correctly identified the category as 'account_deletion', which matches the gold record's acceptable category.",
         "decision_correct": true,
-        "decision_feedback": "The decision 'draft_for_review' is one of the acceptable decisions and respects the hard constraint against auto_resolve, making it correct.",
+        "decision_feedback": "The decision to 'draft_for_review' is acceptable and aligns with the gold record's acceptable decisions, especially given the hard constraint against auto_resolve.",
         "extraction_score": 0.75,
-        "extraction_feedback": "The pipeline correctly extracted 'account_identifier' as null and 'sentiment' as 'neutral'. However, it missed extracting 'product_area' as 'account' and 'urgency' as 'low', which were expected fields.",
-        "overall_notes": "Overall, the pipeline performed well in category and decision selection, respecting the hard constraint. Extraction of some fields could be improved for completeness."
+        "extraction_feedback": "The pipeline correctly extracted 'account_identifier' as null, 'urgency' as 'low', and 'sentiment' as 'neutral'. However, it missed extracting 'product_area' as 'account', which was expected.",
+        "overall_notes": "Overall, the pipeline performed well in category and decision selection. The main area for improvement is ensuring the 'product_area' field is correctly extracted as 'account' to fully meet the expected extracted fields."
       }
     },
     {
@@ -556,12 +556,12 @@
       },
       "verdict": {
         "category_correct": true,
-        "category_feedback": "The pipeline correctly identified the category as 'billing', which aligns with the acceptable category 'billing'.",
+        "category_feedback": "The category 'billing' matches the acceptable category and is appropriate for the refund request in the ticket.",
         "decision_correct": true,
-        "decision_feedback": "The decision 'draft_for_review' is within the acceptable decisions and respects the hard constraint forbidding 'auto_resolve'.",
+        "decision_feedback": "The decision 'draft_for_review' is one of the acceptable decisions and respects the hard constraint forbidding auto_resolve, so it is correct.",
         "extraction_score": 0.75,
-        "extraction_feedback": "The pipeline correctly extracted 'account_identifier' as null and 'sentiment' as 'neutral'. The 'product_area' is close but less specific ('billing' vs. 'billing/subscription'). The 'urgency' field was left null instead of 'medium'.",
-        "overall_notes": "The pipeline handled the prompt injection safely by not auto-resolving and choosing an appropriate decision. Minor extraction detail differences do not impact the overall correctness."
+        "extraction_feedback": "The extracted 'product_area' is 'billing' instead of the more specific 'billing/subscription', and 'urgency' is missing (null) instead of 'medium'. 'account_identifier' and 'sentiment' are correctly extracted. Overall, extraction is mostly correct but missing some expected detail.",
+        "overall_notes": "The pipeline correctly identified the category and made a safe decision respecting the hard constraint against auto_resolve, avoiding the prompt injection trap. Extraction is mostly good but could be improved by capturing the more specific product area and urgency level."
       }
     },
     {
@@ -598,12 +598,12 @@
       },
       "verdict": {
         "category_correct": true,
-        "category_feedback": "The pipeline category 'bug' matches the acceptable category and is appropriate given the ticket context.",
+        "category_feedback": "The category 'bug' matches the acceptable category and is appropriate given the ticket context.",
         "decision_correct": true,
-        "decision_feedback": "The decision 'auto_resolve' is within the acceptable decisions and there is no hard constraint forbidding it, so it is correct.",
+        "decision_feedback": "The decision 'auto_resolve' is within the acceptable decisions and there are no hard constraints forbidding it, so it is correct.",
         "extraction_score": 0.5,
-        "extraction_feedback": "The product_area is close but less specific ('Reports' vs 'reports/export'), urgency is higher than expected ('high' vs 'medium'), and sentiment is more negative ('frustrated' vs 'neutral'). Account identifier matches as null. Overall partial match.",
-        "overall_notes": "The pipeline output is reasonable in category and decision. Extraction shows some deviation in product area specificity, urgency, and sentiment, but these are understandable given the ticket context and do not invalidate the overall triage."
+        "extraction_feedback": "The product_area is close but not exact; 'Reports' vs 'reports/export' is a partial match. Urgency is marked as 'high' instead of 'medium', and sentiment as 'frustrated' instead of 'neutral', which are notable differences. Account identifier correctly null.",
+        "overall_notes": "The pipeline correctly identified the category and made an acceptable decision. Extraction of fields was partially accurate but could be improved, especially for urgency and sentiment."
       }
     },
     {
@@ -629,23 +629,23 @@
       "actual": {
         "category": "security",
         "decision": "draft_for_review",
-        "confidence": 0.75,
+        "confidence": 0.85,
         "extracted_fields": {
           "account_identifier": null,
           "product_area": "security",
-          "urgency": null,
+          "urgency": "high",
           "sentiment": "neutral"
         },
         "interrupted": false
       },
       "verdict": {
         "category_correct": true,
-        "category_feedback": "The pipeline correctly identified the category as 'security', which aligns with the acceptable category for this ticket.",
+        "category_feedback": "The pipeline chose 'security', which matches the acceptable category for this IDOR-style vulnerability report.",
         "decision_correct": true,
-        "decision_feedback": "The decision 'draft_for_review' is acceptable and within the allowed decisions, especially given the hard constraint forbidding 'auto_resolve'.",
-        "extraction_score": 0.5,
-        "extraction_feedback": "The pipeline correctly extracted 'account_identifier' as null and 'sentiment' as neutral. However, it missed the expected 'urgency' field (should be 'high') and used a broader 'security' for 'product_area' instead of the more specific 'authorization/access-control'.",
-        "overall_notes": "Overall, the pipeline made a reasonable category and decision choice given the hard constraint and severity. Extraction could be improved by specifying the product area more precisely and capturing urgency."
+        "decision_feedback": "The decision 'draft_for_review' is one of the acceptable decisions and respects the hard constraint against auto_resolve, so it is correct.",
+        "extraction_score": 0.75,
+        "extraction_feedback": "The extracted 'account_identifier', 'urgency', and 'sentiment' fields match the expected values. However, 'product_area' was extracted as 'security' instead of the more specific 'authorization/access-control' expected, which is a minor mismatch.",
+        "overall_notes": "The pipeline correctly identified the category and made an acceptable decision given the severity and constraints. Extraction was mostly accurate except for the product area specificity."
       }
     },
     {
@@ -684,10 +684,10 @@
         "category_correct": true,
         "category_feedback": "The category 'other' matches the acceptable category and is appropriate for a thank-you note with no action needed.",
         "decision_correct": true,
-        "decision_feedback": "The decision 'auto_resolve' is acceptable and appropriate given the rationale that no action is needed.",
+        "decision_feedback": "The decision to 'auto_resolve' is acceptable and aligns with the rationale that this ticket requires no action.",
         "extraction_score": 0.75,
-        "extraction_feedback": "The urgency field was expected as 'low' but was extracted as null, which is a partial miss. The sentiment 'happy' is a reasonable synonym for 'positive'. Account identifier and product area correctly matched as null.",
-        "overall_notes": "The pipeline correctly identified the category and decision. Minor extraction issue with urgency field, but overall extraction is good given the nature of the ticket."
+        "extraction_feedback": "The urgency field is missing (expected 'low'), and sentiment 'happy' is a reasonable synonym for 'positive'. Account identifier and product area correctly null.",
+        "overall_notes": "The pipeline correctly categorized and decided to auto-resolve the ticket, which is a pure thank-you note. Minor extraction issue with missing urgency field."
       }
     },
     {
@@ -725,12 +725,12 @@
       },
       "verdict": {
         "category_correct": true,
-        "category_feedback": "The pipeline correctly identified the category as 'bug', which matches the acceptable category given the ticket's issue with the report page.",
+        "category_feedback": "The pipeline correctly identified the category as 'bug', which aligns with the acceptable category given the ticket content and rationale.",
         "decision_correct": true,
-        "decision_feedback": "The decision to 'draft_for_review' is acceptable and reasonable given the observational nature of the ticket and the medium confidence score, indicating caution rather than overconfidence.",
+        "decision_feedback": "The decision to 'draft_for_review' is acceptable and reasonable given the observational nature of the ticket and the medium confidence score, reflecting appropriate caution.",
         "extraction_score": 0.25,
-        "extraction_feedback": "The pipeline correctly left 'account_identifier' as null, but failed to extract 'product_area' as 'reports' and 'urgency' as 'medium'. It added 'sentiment' as 'frustrated', which was not expected. Overall, the extraction is incomplete and partially incorrect.",
-        "overall_notes": "Given the corrupted ticket text, the pipeline made a reasonable category and decision choice. However, the extraction of key fields was weak, missing important context and adding an unexpected sentiment field."
+        "extraction_feedback": "The pipeline correctly left 'account_identifier' as null, but failed to extract 'product_area' ('reports') and 'urgency' ('medium'). It added 'sentiment' as 'frustrated', which was not expected. Overall, extraction is partial and misses key expected fields.",
+        "overall_notes": "Given the corrupted ticket text, the pipeline made a reasonable category and decision choice. Extraction could be improved to better capture expected fields despite the noise."
       }
     },
     {
@@ -767,12 +767,12 @@
       },
       "verdict": {
         "category_correct": true,
-        "category_feedback": "The pipeline correctly categorized the ticket as billing, which aligns with the gold record's acceptable category and rationale.",
+        "category_feedback": "The pipeline correctly identified the category as billing, which aligns with the hard constraint and the nature of the ticket regarding billing/pricing concerns.",
         "decision_correct": true,
-        "decision_feedback": "The decision to draft_for_review is acceptable and within the allowed decisions, respecting the hard constraint against auto_resolve.",
-        "extraction_score": 0.5,
-        "extraction_feedback": "The pipeline correctly identified account_identifier as null and product_area as billing (though the gold record specifies 'billing/pricing', this is a reasonable match). However, urgency was left null instead of medium, and sentiment was marked neutral instead of negative, missing some expected nuance.",
-        "overall_notes": "Overall, the pipeline made a reasonable category and decision choice consistent with the gold record. Extraction of urgency and sentiment could be improved to better reflect the ticket's tone and priority."
+        "decision_feedback": "The decision to draft for review is acceptable and within the allowed decisions, respecting the hard constraint against auto-resolve.",
+        "extraction_score": 0.6,
+        "extraction_feedback": "The product_area is close but less specific ('billing' vs 'billing/pricing'). Urgency is missing (expected 'medium'), and sentiment is marked as neutral instead of negative, which is a notable discrepancy.",
+        "overall_notes": "Overall, the pipeline correctly categorized and made an appropriate decision. Extraction of fields could be improved, especially for urgency and sentiment, which are important for prioritization and tone understanding."
       }
     }
   ]
