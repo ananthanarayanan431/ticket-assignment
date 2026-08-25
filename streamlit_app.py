@@ -47,9 +47,10 @@ def call_db(fn):
 
 
 def _invalidate_queues():
-    """Drop cached Escalations/Drafts so the next visit to those pages re-fetches."""
+    """Drop cached Escalations/Drafts/Sent so the next visit to those pages re-fetches."""
     st.session_state.pop("escalations", None)
     st.session_state.pop("drafts", None)
+    st.session_state.pop("auto_resolved", None)
 
 
 async def _run_many(graph, tickets: list[dict]) -> dict[str, dict]:
@@ -90,7 +91,7 @@ def _render_run_result(ticket_id: str, result: dict) -> None:
 st.sidebar.title("Ticket Triage")
 page = st.sidebar.radio(
     "Navigate",
-    ["Run sample tickets", "Test a ticket manually", "Escalations", "Drafts for review"],
+    ["Run sample tickets", "Test a ticket manually", "Escalations", "Drafts for review", "Auto-resolved"],
     label_visibility="collapsed",
 )
 
@@ -213,3 +214,29 @@ elif page == "Drafts for review":
                 call_db(lambda tid=d["ticket_id"]: review.resolve_draft(tid, None, reject=True))
                 _invalidate_queues()
                 st.rerun()
+
+elif page == "Auto-resolved":
+    st.title("✅ Auto-resolved")
+    st.caption("Read-only — these were sent automatically with no human review.")
+    if "auto_resolved" not in st.session_state:
+        st.session_state.auto_resolved = call(review.list_auto_resolved)
+    if st.button("🔄 Refresh"):
+        st.session_state.auto_resolved = call(review.list_auto_resolved)
+
+    sent = st.session_state.auto_resolved
+    if not sent:
+        st.write("Nothing sent yet.")
+    for s in sent:
+        with st.container(border=True):
+            st.subheader(s["ticket_id"])
+            st.caption(s.get("category") or "")
+            st.markdown(f"**From:** {s.get('from_name')} <{s.get('from_email')}>")
+            st.markdown(f"**Subject:** {s.get('subject')}")
+            with st.expander("Original ticket body"):
+                st.markdown(s.get("body") or "")
+
+            if s.get("response_text"):
+                st.caption("Response sent")
+                st.text(s["response_text"])
+            else:
+                st.caption("No reply was sent (e.g. spam closed with no response).")

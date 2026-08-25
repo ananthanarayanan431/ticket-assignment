@@ -89,6 +89,35 @@ async def list_drafts(graph) -> list[dict]:
     return drafts
 
 
+async def list_auto_resolved(graph) -> list[dict]:
+    """
+    Read-only view of tickets that were auto-resolved and already sent —
+    unlike escalations/drafts there's no queue or pending action here, just a
+    record of what went out. Ticket content comes from the graph checkpoint
+    state, same approach as list_drafts.
+    """
+    session_factory = get_session_factory()
+    async with session_factory() as session:
+        rows = await session.execute(select(Ticket).where(Ticket.decision == "auto_resolve"))
+        tickets = rows.scalars().all()
+
+    sent = []
+    for row in tickets:
+        state = await graph.aget_state({"configurable": {"thread_id": row.ticket_id}})
+        sent.append(
+            {
+                "ticket_id": row.ticket_id,
+                "response_text": row.response_text,
+                "category": state.values.get("category"),
+                "from_name": state.values.get("from_name"),
+                "from_email": state.values.get("from_email"),
+                "subject": state.values.get("subject"),
+                "body": state.values.get("body"),
+            }
+        )
+    return sent
+
+
 async def ticket_exists(ticket_id: str) -> bool:
     session_factory = get_session_factory()
     async with session_factory() as session:

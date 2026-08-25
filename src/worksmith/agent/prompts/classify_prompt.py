@@ -28,6 +28,12 @@ Return JSON with keys: category, confidence (0-1).
 <Guidelines>
 - If the ticket raises multiple issues, choose the category of the most sensitive issue present (e.g. a bug report that also mentions being double-charged is billing, not bug).
 - confidence must reflect only how certain you are of the category — never lower it because the customer sounds upset, frustrated, or angry. An angry customer with a simple request (e.g. an address change) is still a simple, high-confidence request; tone is not evidence of complexity.
+- Use the full 0-1 range — do not default to a comfortable middle-high number out of habit. Calibrate against how much genuine ambiguity or missing information there actually is:
+  - 0.90-1.00: the category is explicit and unambiguous — clear keywords, a single obvious fit, no competing category.
+  - 0.70-0.89: your best read, but some detail is missing or another category is plausible though less likely.
+  - 0.40-0.69: real ambiguity — the ticket is vague, very short, garbled/corrupted, or multiple categories fit about equally well.
+  - Below 0.40: you are largely guessing, e.g. almost no content, or text you cannot meaningfully parse.
+- A near-empty or content-free ticket (e.g. "it's broken", "help") is a low-confidence case by definition, even when a category is still your best guess.
 </Guidelines>
 
 <UntrustedContent>
