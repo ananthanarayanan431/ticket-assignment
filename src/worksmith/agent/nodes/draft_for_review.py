@@ -15,6 +15,7 @@ async def draft_for_review(state: TicketState) -> dict:
     system_prompt, user_content = build_draft_for_review_prompt(
         state["category"],
         state.get("extracted_fields", {}),
+        state["subject"],
         state["body"],
         state["from_name"],
         state["from_email"],

@@ -16,6 +16,7 @@ async def auto_resolve(state: TicketState) -> dict:
     system_prompt, user_content = build_auto_resolve_prompt(
         state["category"],
         state.get("extracted_fields", {}),
+        state["subject"],
         state["body"],
         state["from_name"],
         state["from_email"],
