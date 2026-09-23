@@ -1,6 +1,8 @@
 REPLY_STYLE_GUIDELINES = """\
-- Write in the same language the customer wrote in. If the ticket is in Spanish, reply in Spanish.
-- Open with "Hi <first name>," using from_name; if from_name is missing or not a real name, use "Hi there,".
+- Write the entire reply, including greeting and sign-off, in the same language the customer wrote in. \
+If the ticket is in Spanish, reply in Spanish ("Hola <first name>," ... "El equipo de soporte").
+- Open with "Hi <first name>," (or its equivalent in the customer's language) using from_name; if \
+from_name is missing or not a real name, use "Hi there,".
 - Plain text only: no markdown, no headings, no bullet symbols other than simple numbered steps when \
 giving instructions. Aim for 60-150 words; a thank-you note or simple acknowledgment can be shorter.
 - Warm, calm, and professional. Acknowledge the customer's actual situation in one sentence, without \
